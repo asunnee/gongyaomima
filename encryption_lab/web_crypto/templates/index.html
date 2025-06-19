@@ -1,0 +1,108 @@
+{% extends "layout.html" %}
+{% block body %}
+  <div class="container mt-5">
+    <div class="card shadow-lg p-5">
+      <h1 class="text-center mb-5">公钥加密算法实验平台</h1>
+
+      <!-- 算法选择区 -->
+      <div class="row mb-4 align-items-center">
+        <div class="col-auto">
+          <label class="form-label fw-bold">算法选择：</label>
+        </div>
+        <div class="col-auto">
+          <select id="algo" class="form-select w-100">
+            <option>RSA</option>
+            <option>ElGamal</option>
+            <option>ECC</option>
+          </select>
+        </div>
+        <div class="col-auto">
+          <button id="btn-gen" class="btn btn-primary ms-3">生成密钥</button>
+        </div>
+      </div>
+
+      <!-- 密钥展示区 -->
+      <div class="row mb-4">
+        <div class="col">
+          <label class="form-label fw-bold">公钥：</label>
+          <textarea id="pub" class="form-control" rows="3" readonly
+                    style="background: #f5f7fa; border-color: #e0e3e7;"></textarea>
+        </div>
+      </div>
+      <div class="row mb-4">
+        <div class="col">
+          <label class="form-label fw-bold">私钥：</label>
+          <textarea id="priv" class="form-control" rows="3" readonly
+                    style="background: #f5f7fa; border-color: #e0e3e7;"></textarea>
+        </div>
+      </div>
+
+      <!-- 加密区 -->
+      <div class="row mb-4">
+        <div class="col">
+          <label class="form-label fw-bold">输入明文：</label>
+          <input id="plain" class="form-control" placeholder="请输入明文内容" />
+          <button id="btn-enc" class="btn btn-success mt-2">加密</button>
+        </div>
+      </div>
+      <div class="row mb-4">
+        <div class="col">
+          <label class="form-label fw-bold">密文：</label>
+          <textarea id="cipher" class="form-control" rows="3" readonly
+                    style="background: #f5f7fa; border-color: #e0e3e7;"></textarea>
+        </div>
+      </div>
+
+      <!-- 解密区 -->
+      <div class="row mb-4">
+        <div class="col">
+          <label class="form-label fw-bold">输入密文（留空用上次结果）：</label>
+          <input id="cipher-in" class="form-control" placeholder="可选输入密文" />
+          <button id="btn-dec" class="btn btn-warning mt-2">解密</button>
+        </div>
+      </div>
+      <div class="row mb-4">
+        <div class="col">
+          <label class="form-label fw-bold">解密明文：</label>
+          <textarea id="plain-out" class="form-control" rows="3" readonly
+                    style="background: #f5f7fa; border-color: #e0e3e7;"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+<script>
+// 保持原有功能逻辑
+document.getElementById('btn-gen').onclick = async ()=>{
+  const algo = document.getElementById('algo').value;
+  const res = await postJSON('/gen_keys', { algo });
+  if(res.ok){
+    document.getElementById('pub').value = res.data.pub;
+    document.getElementById('priv').value = res.data.priv;
+    alert('密钥生成成功！');
+  }
+};
+
+document.getElementById('btn-enc').onclick = async ()=>{
+  const plain = document.getElementById('plain').value;
+  const res = await postJSON('/encrypt', { plain });
+  if(res.ok){
+    document.getElementById('cipher').value = res.data.ct;
+  } else {
+    alert(res.data.error);
+  }
+};
+
+document.getElementById('btn-dec').onclick = async ()=>{
+  const cipherIn = document.getElementById('cipher-in').value;
+  const res = await postJSON('/decrypt', { cipher: cipherIn });
+  if(res.ok){
+    document.getElementById('plain-out').value = res.data.pt;
+  } else {
+    alert(res.data.error);
+  }
+};
+</script>
+{% endblock %}
